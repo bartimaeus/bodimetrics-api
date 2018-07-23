@@ -32,7 +32,7 @@ COPY . .
 ### Development environment setup ###
 # Set the TERM and SHELL environment variables
 ENV TERM xterm-256color
-ENV SHELL $(which bash)
+ENV SHELL $(which sh)
 
 ### Development environment customizations ###
 RUN echo "export PAGER=more" >> /root/.profile && \
