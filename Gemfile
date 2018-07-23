@@ -2,5 +2,9 @@ source 'https://rubygems.org'
 
 gem 'jwt'
 gem 'rest-client'
-gem 'pry'
-gem 'pry-nav'
+
+group :development do
+  gem 'awesome_print'
+  gem 'pry'
+  gem 'pry-nav'
+end
