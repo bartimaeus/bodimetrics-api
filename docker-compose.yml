@@ -1,0 +1,19 @@
+version: '3.2'
+
+services:
+
+  bodimetrics:
+    build: .
+    container_name: bodimetrics-ruby
+    hostname: bodimetrics
+    command: sh
+    volumes:
+      - .:/bodimetrics:cached
+      - bodimetrics-bundle-cache:/bundle:cached
+    env_file:
+      - .env
+    tty: true
+    stdin_open: true
+
+volumes:
+  bodimetrics-bundle-cache:
