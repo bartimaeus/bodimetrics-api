@@ -1,9 +1,6 @@
 require 'jwt'
 require 'rest-client'
 
-# TODO remove me!
-require 'pry'
-
 class BodiMetrics
   def initialize
     self.base_url = ENV['BODIMETRICS_API_ENDPOINT']
@@ -18,8 +15,7 @@ class BodiMetrics
         clientId: ENV['BODIMETRICS_CLIENT_ID']
       }
       response = RestClient.post "#{base_url}/patients", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
-      ::Kernel.binding.pry # debugging statement
-      response.body
+      JSON.parse(response.body)
     rescue => e
       puts "failed #{e}"
     end
@@ -49,8 +45,7 @@ class BodiMetrics
         endDate: end_date.strftime("%m-%d-%Y %H:%M:%S") # MM-DD-YYYY HH:mm:ss
       }
       response = RestClient.post "#{base_url}/measurements", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
-      ::Kernel.binding.pry # debugging statement
-      response.body
+      JSON.parse(response.body)
     rescue => e
       puts "failed #{e}"
     end
@@ -69,8 +64,7 @@ class BodiMetrics
         endDate: end_date.strftime("%m-%d-%Y %H:%M:%S") # MM-DD-YYYY HH:mm:ss
       }
       response = RestClient.post "#{base_url}/pwi", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
-      ::Kernel.binding.pry # debugging statement
-      response.body
+      JSON.parse(response.body)
     rescue => e
       puts "failed #{e}"
     end
@@ -88,13 +82,13 @@ class BodiMetrics
     token = JWT.encode payload, ENV['BODIMETRICS_CLIENT_SECRET'], 'HS256'
 
     begin
-      response = RestClient.post "#{base_url}/auth", {}, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{token}"}
-      puts response.body
-      ::Kernel.binding.pry # debugging statement
-      puts "token: #{token}"
+      response = RestClient.post "#{base_url}/auth", token, {content_type: "application/x-www-form-urlencoded"}
+      json = JSON.parse(response.body)
+      if json["success"]
+        self.auth_token = json["data"]
+      end
     rescue => e
       puts e
-      ::Kernel.binding.pry
     end
   end
 
