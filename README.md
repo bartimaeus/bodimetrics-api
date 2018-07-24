@@ -37,11 +37,6 @@ A sample repository to test BodiMetrics API using Ruby
 
         require './lib/bodi_metrics.rb'
 
-4. Create a new instance of the BodiMetrics API
+4. Make an API call
 
-        api = BodiMetrics.new
-
-5. Make an API call
-
-        api.get_patients
-
+        BodiMetrics.get_patients

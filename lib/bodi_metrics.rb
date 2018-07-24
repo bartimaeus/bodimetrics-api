@@ -2,19 +2,17 @@ require 'jwt'
 require 'rest-client'
 
 class BodiMetrics
-  def initialize
-    self.base_url = ENV['BODIMETRICS_API_ENDPOINT']
-    get_auth_token
-  end
-
   # Patients: This call will retrieve the information for any patients that you have privileges to view.
-  def get_patients
+  def self.get_patients(ids_only = false)
+    auth_token = get_auth_token
+    return unless auth_token.present?
+
     begin
       data = {
-        idsOnly: false, # TRUE to return patient ids only, FALSE to return patient ids and all demographic data
+        idsOnly: ids_only, # TRUE to return patient ids only, FALSE to return patient ids and all demographic data
         clientId: ENV['BODIMETRICS_CLIENT_ID']
       }
-      response = RestClient.post "#{base_url}/patients", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
+      response = RestClient.post "#{ENV['BODIMETRICS_API_ENDPOINT']}/patients", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
       JSON.parse(response.body)
     rescue => e
       puts "failed #{e}"
@@ -32,9 +30,10 @@ class BodiMetrics
   #
   # O2 Vibe             |     3     | sleep, sleep_avghr, sleep_avgspo2, sleep_drops, sleep_duration, sleep_lowspo2, sleep_o2score, sleep_time
   #                                   steps, steps_avghr, steps_avgspo2, steps_goal, steps_lowspo2, steps_rectime, steps_steps
-  def get_measurements(patientIds, measurements, device_id = 1, start_date = nil, end_date = nil)
-    start_date ||= Date.today
-    end_date ||= 1.month.ago
+  def self.get_measurements(start_date = 7.days.ago.beginning_of_day, end_date = Date.today.end_of_day, device_id = 1, measurements = nil, patientIds = nil)
+    auth_token = get_auth_token
+    return unless auth_token.present?
+
     begin
       data = {
         patientIds: patientIds, # an array of the patient ids retrieved in the step 2. These are the keys from the patients array. Leave array blank for all patients.
@@ -44,7 +43,7 @@ class BodiMetrics
         startDate: start_date.strftime("%m-%d-%Y %H:%M:%S"), # MM-DD-YYYY HH:mm:ss
         endDate: end_date.strftime("%m-%d-%Y %H:%M:%S") # MM-DD-YYYY HH:mm:ss
       }
-      response = RestClient.post "#{base_url}/measurements", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
+      response = RestClient.post "#{ENV['BODIMETRICS_API_ENDPOINT']}/measurements", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
       JSON.parse(response.body)
     rescue => e
       puts "failed #{e}"
@@ -52,10 +51,11 @@ class BodiMetrics
   end
 
 
-  # PWI (): This call will retrieve pwi results for any or all of your patients
-  def get_pwi(patientIds, start_date = nil, end_date = nil)
-    start_date ||= Date.today
-    end_date ||= 1.month.ago
+  # PWI: This call will retrieve pwi results for any or all of your patients
+  def self.get_pwi(start_date = 7.days.ago.beginning_of_day, end_date = Date.today.end_of_day, patientIds = nil)
+    auth_token = get_auth_token
+    return unless auth_token.present?
+
     begin
       data = {
         patientIds: patientIds, # an array of the patient ids retrieved in the step 2. These are the keys from the patients array. Leave array blank for all patients.
@@ -63,18 +63,15 @@ class BodiMetrics
         startDate: start_date.strftime("%m-%d-%Y %H:%M:%S"), # MM-DD-YYYY HH:mm:ss
         endDate: end_date.strftime("%m-%d-%Y %H:%M:%S") # MM-DD-YYYY HH:mm:ss
       }
-      response = RestClient.post "#{base_url}/pwi", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
+      response = RestClient.post "#{ENV['BODIMETRICS_API_ENDPOINT']}/pwi", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
       JSON.parse(response.body)
     rescue => e
       puts "failed #{e}"
     end
   end
 
-  private
-  attr_accessor :auth_token, :base_url
-
   # Sign in to the BodiMetrics API and get the auth token needed for future calls
-  def get_auth_token
+  private_class_method def self.get_auth_token
     payload = {
       "clientId" => ENV['BODIMETRICS_CLIENT_ID'],
       "requestTime" => Time.now.utc.strftime("%Y-%m-%d %H:%M:%S")
@@ -82,7 +79,7 @@ class BodiMetrics
     token = JWT.encode payload, ENV['BODIMETRICS_CLIENT_SECRET'], 'HS256'
 
     begin
-      response = RestClient.post "#{base_url}/auth", token, {content_type: "application/x-www-form-urlencoded"}
+      response = RestClient.post "#{ENV['BODIMETRICS_API_ENDPOINT']}/auth", token, {content_type: "application/x-www-form-urlencoded"}
       json = JSON.parse(response.body)
       if json["success"]
         self.auth_token = json["data"]
