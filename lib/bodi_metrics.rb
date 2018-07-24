@@ -40,8 +40,8 @@ class BodiMetrics
         measurements: measurements, # an array of the desired measurements. Leave array blank for all measurements. (see table below for deviceId and associated measurements)
         deviceId: device_id, # YOUR DEVICE TYPE (see table above)
         clientId: ENV['BODIMETRICS_CLIENT_ID'],
-        startDate: start_date.strftime("%m-%d-%Y %H:%M:%S"), # MM-DD-YYYY HH:mm:ss
-        endDate: end_date.strftime("%m-%d-%Y %H:%M:%S") # MM-DD-YYYY HH:mm:ss
+        startDate: start_date.strftime("%Y-%m-%d %H:%M:%S"), # YYYY-MM-DD HH:mm:ss
+        endDate: end_date.strftime("%Y-%m-%d %H:%M:%S") # YYYY-MM-DD HH:mm:ss
       }
       response = RestClient.post "#{ENV['BODIMETRICS_API_ENDPOINT']}/measurements", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
       JSON.parse(response.body)
@@ -60,8 +60,8 @@ class BodiMetrics
       data = {
         patientIds: patientIds, # an array of the patient ids retrieved in the step 2. These are the keys from the patients array. Leave array blank for all patients.
         clientId: ENV['BODIMETRICS_CLIENT_ID'],
-        startDate: start_date.strftime("%m-%d-%Y %H:%M:%S"), # MM-DD-YYYY HH:mm:ss
-        endDate: end_date.strftime("%m-%d-%Y %H:%M:%S") # MM-DD-YYYY HH:mm:ss
+        startDate: start_date.strftime("%Y-%m-%d %H:%M:%S"), # YYYY-MM-DD HH:mm:ss
+        endDate: end_date.strftime("%Y-%m-%d %H:%M:%S") # YYYY-MM-DD HH:mm:ss
       }
       response = RestClient.post "#{ENV['BODIMETRICS_API_ENDPOINT']}/pwi", data, {content_type: "application/x-www-form-urlencoded", authorization: "Bearer #{auth_token}"}
       JSON.parse(response.body)
